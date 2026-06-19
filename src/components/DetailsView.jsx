@@ -12,7 +12,12 @@ export default function DetailsView({
     return (
       <section className="detail-panel" style={{ justifyContent: 'center', alignItems: 'center' }}>
         <div className="empty-state">
-          <div className="empty-icon" style={{ fontSize: '60px', opacity: 0.2 }}>🔍</div>
+          <div className="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3 }}>
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
           <h3>No Request Selected</h3>
           <p>Click on a row in the traffic list to view full request/response headers, decoded body content, and system actions.</p>
         </div>
@@ -163,14 +168,17 @@ export default function DetailsView({
           <div className="detail-section">
             <div className="section-heading">DNS Resolution Bypass Routing</div>
             <div className="dns-bypass-alert">
-              <div className="dns-title">🛡️ Active Route Hijacking (DNS Spoofing)</div>
+              <div className="dns-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Active Route Hijacking (DNS Spoofing)
+              </div>
               <p>
                 This host (<code>freetube.com.mx</code>) suffers from DNS resolver suppression on typical local network configurations (e.g. ISP blocks or timeouts).
               </p>
               <p>
                 To bypass this, our MITM Engine interceptor (<code>DNSBypass</code> addon) intercepted the connection request, skipped Windows DNS resolver, and routed TCP streams straight to:
               </p>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', background: 'rgba(0,0,0,0.3)', padding: '8px', borderRadius: '4px', margin: '4px 0' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px', margin: '4px 0' }}>
                 IP: <strong style={{ color: 'var(--color-success)' }}>104.21.21.50</strong><br/>
                 Port: <strong style={{ color: 'var(--color-success)' }}>443</strong>
               </div>

@@ -53,8 +53,28 @@ class CaptureHTTP:
             )
             page = await context.new_page()
 
+            # Intercept and abort ads, tracking, and analytics to speed up load and prevent OOM
+            async def intercept_route(route):
+                url = route.request.url.lower()
+                blacklist = [
+                    "analytics", "doubleclick", "googleadservices", "adsystem", 
+                    "adservice", "adskeeper", "adsterra", "popads", "popcash", 
+                    "cnzz.com", "umeng.com", "statcounter", "hotjar", "mixpanel",
+                    "facebook.net", "facebook.com/tr", "coeus", "log.", "report",
+                    "stat", "ping", "metrics", "beacon", "telemetry", "track",
+                    "advertis", "syndication", "amazon-adsystem", "adnxs",
+                    "criteo", "pubmatic", "rubiconproject", "casalemedia",
+                    "openx", "yieldlab", "indexww", "smartadserver"
+                ]
+                if any(k in url for k in blacklist):
+                    await route.abort()
+                else:
+                    await route.continue_()
+
+            await page.route("**/*", intercept_route)
+
             # ---------------------------------------------------------
-            # 1. LOGGING REQUEST NHƯ DEVTOOLS
+            # 1. LOGGING REQUEST
             # ---------------------------------------------------------
             def handle_request(request):
                 try:
@@ -62,13 +82,7 @@ class CaptureHTTP:
                     method = request.method
                     headers = request.headers
                     
-                    # In Log Request
-                    logging.info(f"  |➡ Request Method: {method}")
-                    logging.info("  |-- Request Headers:")
-                    for k, v in headers.items():
-                        # Cắt ngắn value nếu quá dài để console không bị rối
-                        val_str = v[:150] + '...' if len(v) > 150 else v
-                        logging.info(f"  |     {k}: {val_str}")
+                    logging.info(f"➡ Request: {method} {url[:90]}...")
                     
                     # Logic lưu header của file TS đầu tiên
                     if ('.ts' in url or 'seg-' in url) and not self.ts_headers:
@@ -82,20 +96,13 @@ class CaptureHTTP:
                     logging.error(f"  [!] Lỗi khi đọc Request: {e}")
 
             # ---------------------------------------------------------
-            # 2. LOGGING RESPONSE NHƯ DEVTOOLS
+            # 2. LOGGING RESPONSE
             # ---------------------------------------------------------
             async def handle_response(response):
                 try:
                     url = response.url
                     status = response.status
-                    headers = response.headers
-                    
-                    # In Log Response
-                    logging.info(f"\n[⬅ RESPONSE] Status: {status} | URL: {url}")
-                    logging.info("  |-- Response Headers:")
-                    for k, v in headers.items():
-                        val_str = v[:150] + '...' if len(v) > 150 else v
-                        logging.info(f"  |     {k}: {val_str}")
+                    logging.info(f"⬅ Response: {status} {url[:90]}...")
                 except Exception as e:
                     logging.error(f"  [!] Lỗi khi đọc Response: {e}")
 

@@ -25,7 +25,7 @@ TEXT_TYPES = (
     "application/graphql",
 )
 
-MAX_BODY_BYTES = 256 * 1024 * 1024 * 1024  # 256 MB — truncate larger bodies
+MAX_BODY_BYTES = 256 * 1024  # 256 KB — truncate larger bodies to prevent UI lag / OOM
 
 
 def _decode_body(content: bytes, content_encoding: str, content_type: str) -> tuple[str, bool]:

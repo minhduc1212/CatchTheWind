@@ -13,7 +13,13 @@ export default function TrafficList({ filteredPackets, selectedPacketId, onSelec
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredPackets.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🌬️</div>
+            <div className="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: 0.3 }}>
+                <path d="M2 8h15a3 3 0 1 0-3-3" />
+                <path d="M2 12h19a3 3 0 1 1-3 3" />
+                <path d="M2 16h11a3 3 0 1 0-3-3" />
+              </svg>
+            </div>
             <h3>No Network Activity</h3>
             <p>Start proxy recording or navigate to websites using Firefox Playwright scan above to inspect traffic.</p>
           </div>

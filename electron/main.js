@@ -115,7 +115,7 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    backgroundColor: "#0d0d0f",
+    backgroundColor: "#ffffff",
     frame: false,          // custom title bar in React
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
