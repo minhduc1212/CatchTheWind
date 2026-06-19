@@ -128,10 +128,30 @@ def shutdown(signum, frame):
     sys.exit(0)
 
 
+def listen_stdin():
+    """Listens to stdin for quit commands from the Electron parent process."""
+    while True:
+        try:
+            line = sys.stdin.readline()
+            if not line:
+                break
+            if line.strip().lower() in ("quit", "exit", "stop"):
+                log.info("[*] Received quit command from parent process.")
+                break
+        except Exception:
+            break
+    clear_system_proxy()
+    sys.exit(0)
+
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
+
+    # Start stdin listener thread in background
+    stdin_thread = threading.Thread(target=listen_stdin, daemon=True)
+    stdin_thread.start()
 
     log.info("[*] Installing mitmproxy Root CA certificate...")
     install_ca_cert()

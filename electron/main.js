@@ -30,7 +30,7 @@ function startBackend() {
   const cwdDir = IS_DEV ? path.join(__dirname, "..", "backend") : undefined;
 
   pythonProcess = spawn(PYTHON_EXE, args, {
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: ["pipe", "pipe", "pipe"], // Allow stdin pipe communication
     cwd: cwdDir,
   });
 
@@ -63,19 +63,47 @@ function startBackend() {
     proxyActive = false;
     mainWindow?.webContents.send("proxy-status", { active: false });
     pythonProcess = null;
+    // Backup: clean proxy from Node when process dies
+    cleanProxyFromNode();
   });
+}
+
+function cleanProxyFromNode() {
+  // Spawn a quick command line registry modifier as a backup failsafe
+  if (process.platform === "win32") {
+    console.log("[Electron] Running fallback registry proxy disable...");
+    spawn("reg", [
+      "add", 
+      "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+      "/v", "ProxyEnable", 
+      "/t", "REG_DWORD", 
+      "/d", "0", 
+      "/f"
+    ]);
+  }
 }
 
 function stopBackend() {
   if (pythonProcess) {
-    pythonProcess.kill("SIGTERM");
-    // Fallback: force kill after 3s if SIGTERM didn't work
+    try {
+      console.log("[Electron] Writing 'quit' to Python backend stdin...");
+      pythonProcess.stdin.write("quit\n");
+    } catch (e) {
+      console.error("[Electron] Failed to write to stdin:", e);
+      pythonProcess.kill("SIGTERM");
+    }
+
+    // Force kill if it hasn't exited within 1.5s
     setTimeout(() => {
       if (pythonProcess) {
+        console.log("[Electron] Force killing Python backend...");
         pythonProcess.kill("SIGKILL");
         pythonProcess = null;
+        cleanProxyFromNode();
       }
-    }, 3000);
+    }, 1500);
+  } else {
+    cleanProxyFromNode();
   }
 }
 
@@ -187,6 +215,7 @@ ipcMain.handle("run-playwright", (event, url) => {
 // ─── App Lifecycle ────────────────────────────────────────────────────────────
 
 app.whenReady().then(() => {
+  cleanProxyFromNode(); // Clean startup state failsafe
   createWindow();
   // Auto-start backend is disabled to stay inactive on load
 });
@@ -196,7 +225,12 @@ app.on("will-quit", (event) => {
   if (pythonProcess) {
     event.preventDefault();          // hold the quit until cleanup done
     stopBackend();
-    setTimeout(() => app.quit(), 1500);
+    setTimeout(() => {
+      cleanProxyFromNode();
+      app.quit();
+    }, 1600);
+  } else {
+    cleanProxyFromNode();
   }
 });
 
