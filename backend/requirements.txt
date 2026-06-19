@@ -1,0 +1,6 @@
+playwright>=1.40.0
+playwright-stealth>=1.0.0
+requests>=2.31.0
+mitmproxy>=10.3.0
+websockets>=12.0
+brotli>=1.1.0
